@@ -15,4 +15,8 @@ public class GamePlayerStruct {
 		this.assists = assists;
 		this.pos = pos;
 	}
+	
+	public boolean isPlaying() {
+		return pos != -1;
+	}
 }

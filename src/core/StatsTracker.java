@@ -22,8 +22,11 @@ public class StatsTracker {
 	static int previousRedScore, previousBlueScore;
 	// Game time from last tick
 	static int previousTime;
-	// List of player structs in game memory i.e. those that are currently in game
+	// Lists of player structs in game memory i.e. those that are currently in game
+	// From last tick
 	static ArrayList<GamePlayerStruct> previousGamePlayers = new ArrayList<GamePlayerStruct>();
+	// From current tick
+	static ArrayList<GamePlayerStruct> gamePlayers = new ArrayList<GamePlayerStruct>();
 
 	/**
 	 * Turn a game time integer into a pretty readable time
@@ -58,11 +61,11 @@ public class StatsTracker {
 				int redScore = StatsExtractor.getRedScore();
 				int blueScore = StatsExtractor.getBlueScore();
 
-				ArrayList<GamePlayerStruct> gamePlayers = StatsExtractor.getPlayers();
+				gamePlayers = StatsExtractor.getPlayers();
 				
 				if (previousTime / 100 != time / 100) {
 					for (GamePlayerStruct gps : gamePlayers) {
-						if (gps.pos != -1) {
+						if (gps.isPlaying()) {
 							String name = gps.name;
 							if (players.containsKey(name)) {
 								players.get(name).toi++;
@@ -74,29 +77,15 @@ public class StatsTracker {
 				}
 				
 				// If score has changed
-				if (redScore != previousRedScore || blueScore != previousBlueScore) {
-					String scorer = "", assister = "";
-					
-					// Find the name of the scorer and the assister
-					for (GamePlayerStruct current : gamePlayers) {
-						for (GamePlayerStruct previous : previousGamePlayers) {
-							if (current.name.equals(previous.name)) {
-								if (current.goals != previous.goals) {
-									scorer = current.name;
-								}
-								if (current.assists != previous.assists) {
-									assister = current.name;
-								}
-							}
-						}
-					}
-					
-					if (redScore != previousRedScore) {
-						redGoals.add(new Goal(scorer, assister, time, period, 0));
-					} else {
-						blueGoals.add(new Goal(scorer, assister, time, period, 1));
-					}
-										
+				
+				if (redScore != previousRedScore) {
+					addGoal(0, time, period);
+					previousRedScore = redScore;
+					previousBlueScore = blueScore;
+				}
+				
+				if (blueScore != previousBlueScore) {
+					addGoal(1, time, period);
 					previousRedScore = redScore;
 					previousBlueScore = blueScore;
 				}
@@ -144,5 +133,36 @@ public class StatsTracker {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	static void addGoal(int team, int time, int period) {
+			String scorer = "", assister = "";
+			
+			// Find the name of the scorer and the assister, update +/-
+			for (GamePlayerStruct current : gamePlayers) {
+				if (current.isPlaying()) {
+					if (current.team == team) {
+						players.get(current.name).plusminus++;
+					} else {
+						players.get(current.name).plusminus--;
+					}
+				}
+				for (GamePlayerStruct previous : previousGamePlayers) {
+					if (current.name.equals(previous.name)) {
+						if (current.goals != previous.goals) {
+							scorer = current.name;
+						}
+						if (current.assists != previous.assists) {
+							assister = current.name;
+						}
+					}
+				}
+			}
+			
+			if (team == 0) {
+				redGoals.add(new Goal(scorer, assister, time, period, 0));
+			} else {
+				blueGoals.add(new Goal(scorer, assister, time, period, 1));
+			}
 	}
 }
