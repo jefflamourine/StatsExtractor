@@ -10,6 +10,8 @@ import org.apache.commons.io.FileUtils;
 
 public class StatsTracker {
 
+	final static String newLine = System.getProperty("line.separator");
+	
 	//-- Looping/Iteration --//
 
 	// Time of last memory read
@@ -149,13 +151,13 @@ public class StatsTracker {
 	
 	static void writeGoalsToFile(File file, ArrayList<Goal> goals) throws IOException {
 		for (Goal g : goals) {
-			FileUtils.writeStringToFile(file, g.toString() + "\n", true);
+			FileUtils.writeStringToFile(file, g.toString() + newLine, true);
 		}
 	}
 	
 	static void writePerformancesToFile(File file) throws IOException {
 		for (Entry<String, Performance> e : players.entrySet()) {
-			FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + "\n"), true);
+			FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + newLine), true);
 		}
 	}
 
@@ -203,8 +205,8 @@ public class StatsTracker {
 		String gameScore = "RED: " + redGoals.size() + " BLUE: " + blueGoals.size();
 		
 		try {
-			FileUtils.writeStringToFile(performancesFile, gameScore + "\n", true);
-			FileUtils.writeStringToFile(goalsFile, gameScore + "\n", true);
+			FileUtils.writeStringToFile(performancesFile, gameScore + newLine, true);
+			FileUtils.writeStringToFile(goalsFile, gameScore + newLine, true);
 
 			writeGoalsToFile(goalsFile, redGoals);
 			writeGoalsToFile(goalsFile, blueGoals);
