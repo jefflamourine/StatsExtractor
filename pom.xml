@@ -1,52 +1,51 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>StatsExtractor</groupId>
-  <artifactId>StatsExtractor</artifactId>
+  <groupId>StatsTracker</groupId>
+  <artifactId>StatsTracker</artifactId>
   <version>0.0.1</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <createDependencyReducedPom> false </createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>core.StatsTracker</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
           </execution>
         </executions>
         <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
+          <finalName>${artifactId}</finalName>
         </configuration>
       </plugin>
     </plugins>
   </build>
   <dependencies>
-  	<dependency>
-  		<groupId>net.java.dev.jna</groupId>
-  		<artifactId>jna</artifactId>
-  		<version>4.2.1</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>net.java.dev.jna</groupId>
-  		<artifactId>jna-platform</artifactId>
-  		<version>4.2.1</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>2.4</version>
-  	</dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>4.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>4.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
   </dependencies>
 </project>
