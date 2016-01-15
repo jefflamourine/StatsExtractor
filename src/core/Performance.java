@@ -3,7 +3,7 @@ package core;
 public class Performance {
 
 	int team, goals, assists, toi, plusminus;
-	
+
 	public Performance(int team) {
 		this(team, 0, 0, 1, 0);
 	}

@@ -21,6 +21,4 @@ public class Goal {
 		return "Goal [scorer=" + scorer + ", assister=" + assister + ", time="
 				+ time + ", period=" + period + ", team=" + team + "]";
 	}
-	
-	
 }

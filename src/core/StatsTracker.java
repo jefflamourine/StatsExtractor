@@ -1,37 +1,47 @@
 package core;
+import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
+
 public class StatsTracker {
+
+	//-- Looping/Iteration --//
 
 	// Time of last memory read
 	static long lastTickTime = 0;
+	// Time of current memory read
+	static long currentTickTime;
 	// Is a game being tracked?
 	static boolean tracking = true;
-	
+
+	//-- Output Data --//
+
 	// Map of players who have played, i.e. those that should be shown in output
 	// to their performance in the game
 	static HashMap<String, Performance> players = new HashMap<String, Performance>();
 	// Lists of goals, to be output
 	static ArrayList<Goal> redGoals = new ArrayList<Goal>();
 	static ArrayList<Goal> blueGoals = new ArrayList<Goal>();
-	
-	// Scores from last tick
-	static int previousRedScore, previousBlueScore;
-	// Game time from last tick
-	static int previousTime;
-	// Lists of player structs in game memory i.e. those that are currently in game
-	// From last tick
-	static ArrayList<GamePlayerStruct> previousGamePlayers = new ArrayList<GamePlayerStruct>();
-	// From current tick
+
+	//-- Current memory data --//
+
+	static int redScore, blueScore, time, period;
 	static ArrayList<GamePlayerStruct> gamePlayers = new ArrayList<GamePlayerStruct>();
+
+	//-- Previous memory data --//
+
+	static int previousRedScore, previousBlueScore, previousTime;
+	static ArrayList<GamePlayerStruct> previousGamePlayers = new ArrayList<GamePlayerStruct>();
 
 	/**
 	 * Turn a game time integer into a pretty readable time
 	 * @param time
-	 * @return
+	 * @return Formatted time string
 	 */
 	public static String formatTime(int time) {
 		int totalSeconds = time / 100;
@@ -42,127 +52,169 @@ public class StatsTracker {
 		return seconds < 10 ? minutes + ":0" + seconds : minutes + ":" + seconds;
 	}
 
-	public static void main(String... args) {
-		StatsExtractor.init();
-		
-		// Initial previous scores to score when tracker starts
-		previousRedScore = StatsExtractor.getRedScore();
-		previousBlueScore = StatsExtractor.getBlueScore();
-		
-		while (tracking) {
-			long currentTime = System.currentTimeMillis();
-
-			if (currentTime - lastTickTime >= 1000) {
-								
-				lastTickTime = currentTime;
-				
-				int time = StatsExtractor.getTime();
-				int period = StatsExtractor.getPeriod();
-				int redScore = StatsExtractor.getRedScore();
-				int blueScore = StatsExtractor.getBlueScore();
-
-				gamePlayers = StatsExtractor.getPlayers();
-				
-				if (previousTime / 100 != time / 100) {
-					for (GamePlayerStruct gps : gamePlayers) {
-						if (gps.isPlaying()) {
-							String name = gps.name;
-							if (players.containsKey(name)) {
-								players.get(name).toi++;
-							} else {
-								players.put(name, new Performance(gps.team));
-							}
-						}
+	/**
+	 * Update static members containing data from memory
+	 */
+	static void updateGameData() {
+		time = StatsExtractor.getTime();
+		period = StatsExtractor.getPeriod();
+		redScore = StatsExtractor.getRedScore();
+		blueScore = StatsExtractor.getBlueScore();
+		gamePlayers = StatsExtractor.getPlayers();
+	}
+	
+	static void incrementTimeOnIce() {
+		if (previousTime / 100 != time / 100) {
+			for (GamePlayerStruct gps : gamePlayers) {
+				if (gps.isPlaying()) {
+					String name = gps.name;
+					if (players.containsKey(name)) {
+						players.get(name).toi++;
+					} else {
+						players.put(name, new Performance(gps.team));
 					}
 				}
-				
-				// If score has changed
-				
-				if (redScore != previousRedScore) {
-					addGoal(0, time, period);
-					previousRedScore = redScore;
-					previousBlueScore = blueScore;
-				}
-				
-				if (blueScore != previousBlueScore) {
-					addGoal(1, time, period);
-					previousRedScore = redScore;
-					previousBlueScore = blueScore;
-				}
-				
-				previousGamePlayers = gamePlayers;
-				previousTime = time;
-				
-				// Period value increases at start of intermission not next period
-				// it appears: time = 0 if game ends in regulation
-				// 			   time = 1 if goal is scored in OT
-				if (period > 3 && redScore != blueScore) {
-					tracking = false;
-				}
 			}
 		}
-
-		System.out.println("GAME OVER --- RED: " + redGoals.size() + " BLUE: " + blueGoals.size());
-		
-		for (Goal g : redGoals) {
-			if (!g.scorer.equals("")) {
-				players.get(g.scorer).goals++;
+	}
+	
+	static void updatePlusMinus(int teamScored, GamePlayerStruct player) {
+		if (player.isPlaying()) {
+			if (player.team == teamScored) {
+				players.get(player.name).plusminus++;
+			} else {
+				players.get(player.name).plusminus--;
 			}
-			if (!g.assister.equals("")) {
-				players.get(g.assister).assists++;
-			}
-			System.out.println(g.toString());
-		}
-		
-		for (Goal g : blueGoals) {
-			if (!g.scorer.equals("")) {
-				players.get(g.scorer).goals++;
-			}
-			if (!g.assister.equals("")) {
-				players.get(g.assister).assists++;
-			}
-			System.out.println(g.toString());
-		}
-		
-		for (Entry<String, Performance> e : players.entrySet()) {
-			System.out.println(e.getKey() + ": " + e.getValue().toString());
-		}
-		
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	
 	static void addGoal(int team, int time, int period) {
-			String scorer = "", assister = "";
+		String scorer = "", assister = "";
+
+		// Find the name of the scorer and the assister, update +/-
+		for (GamePlayerStruct currentPlayer : gamePlayers) {
 			
-			// Find the name of the scorer and the assister, update +/-
-			for (GamePlayerStruct current : gamePlayers) {
-				if (current.isPlaying()) {
-					if (current.team == team) {
-						players.get(current.name).plusminus++;
-					} else {
-						players.get(current.name).plusminus--;
+			updatePlusMinus(team, currentPlayer);
+			
+			for (GamePlayerStruct previousPlayer : previousGamePlayers) {
+				if (currentPlayer.name.equals(previousPlayer.name)) {
+					
+					if (currentPlayer.goals != previousPlayer.goals) {
+						scorer = currentPlayer.name;
 					}
-				}
-				for (GamePlayerStruct previous : previousGamePlayers) {
-					if (current.name.equals(previous.name)) {
-						if (current.goals != previous.goals) {
-							scorer = current.name;
-						}
-						if (current.assists != previous.assists) {
-							assister = current.name;
-						}
+					
+					if (currentPlayer.assists != previousPlayer.assists) {
+						assister = currentPlayer.name;
 					}
 				}
 			}
-			
-			if (team == 0) {
-				redGoals.add(new Goal(scorer, assister, time, period, 0));
-			} else {
-				blueGoals.add(new Goal(scorer, assister, time, period, 1));
+		}
+
+		if (team == 0) {
+			redGoals.add(new Goal(scorer, assister, time, period, 0));
+		} else {
+			blueGoals.add(new Goal(scorer, assister, time, period, 1));
+		}
+	}
+	
+	static void updatePreviousGameData() {
+		previousRedScore = redScore;
+		previousBlueScore = blueScore;
+		previousGamePlayers = gamePlayers;
+		previousTime = time;
+	}
+	
+	/**
+	 * Check for the end of the game
+	 * Period value increases at the start of intermission not the next period
+	 * it appears: time = 0 if game ends in regulation
+	 * 			   time = 1 if goal is scored in OT
+	 */
+	static void checkEndOfGame() {
+		if (period > 3 && redScore != blueScore) {
+			tracking = false;
+		}
+	}
+	
+	static void addGoalsToPerformances(ArrayList<Goal> goals) {
+		for (Goal g : goals) {
+			if (!g.scorer.equals("")) {
+				players.get(g.scorer).goals++;
 			}
+			if (!g.assister.equals("")) {
+				players.get(g.assister).assists++;
+			}
+		}
+	}
+	
+	static void writeGoalsToFile(File file, ArrayList<Goal> goals) throws IOException {
+		for (Goal g : goals) {
+			FileUtils.writeStringToFile(file, g.toString() + "\n", true);
+		}
+	}
+	
+	static void writePerformancesToFile(File file) throws IOException {
+		for (Entry<String, Performance> e : players.entrySet()) {
+			FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + "\n"), true);
+		}
+	}
+
+	public static void main(String... args) {
+		StatsExtractor.init();
+
+		// Initial previous scores to score when tracker starts
+		previousRedScore = StatsExtractor.getRedScore();
+		previousBlueScore = StatsExtractor.getBlueScore();
+
+		while (tracking) {
+			currentTickTime = System.currentTimeMillis();
+
+			if (currentTickTime - lastTickTime >= 1000) {
+				lastTickTime = currentTickTime;
+
+				updateGameData();
+
+				incrementTimeOnIce();
+
+				// If score has changed
+
+				if (redScore != previousRedScore) {
+					addGoal(0, time, period);
+				}
+
+				if (blueScore != previousBlueScore) {
+					addGoal(1, time, period);
+				}
+
+				updatePreviousGameData();
+				
+				checkEndOfGame();
+			}
+		}
+
+		addGoalsToPerformances(redGoals);
+		addGoalsToPerformances(blueGoals);
+		
+		Date now = new Date();
+		
+		File goalsFile = new File(now.getTime() + "-goals.txt"); 
+		File performancesFile = new File(now.getTime() + "-performances.txt"); 
+		
+		String gameScore = "RED: " + redGoals.size() + " BLUE: " + blueGoals.size();
+		
+		try {
+			FileUtils.writeStringToFile(performancesFile, gameScore + "\n", true);
+			FileUtils.writeStringToFile(goalsFile, gameScore + "\n", true);
+
+			writeGoalsToFile(goalsFile, redGoals);
+			writeGoalsToFile(goalsFile, blueGoals);
+			
+			writePerformancesToFile(performancesFile);
+			
+			System.in.read();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
