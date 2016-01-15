@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 public class StatsTracker {
 
 	final static String newLine = System.getProperty("line.separator");
-	
+
 	//-- Looping/Iteration --//
 
 	// Time of last memory read
@@ -19,7 +19,7 @@ public class StatsTracker {
 	// Time of current memory read
 	static long currentTickTime;
 	// Is a game being tracked?
-	static boolean tracking = true;
+	static boolean tracking = false;
 
 	//-- Output Data --//
 
@@ -54,6 +54,18 @@ public class StatsTracker {
 		return seconds < 10 ? minutes + ":0" + seconds : minutes + ":" + seconds;
 	}
 
+	static void checkForCommands(String message) {
+		if (message.length() == 3 && message.equals("!se")) {
+			System.out.println("Command detected");
+			tracking = true;
+		}
+	}
+
+	static boolean timeForNextTick() {
+		currentTickTime = System.currentTimeMillis();
+		return currentTickTime - lastTickTime >= 1000;
+	}
+
 	/**
 	 * Update static members containing data from memory
 	 */
@@ -64,7 +76,7 @@ public class StatsTracker {
 		blueScore = StatsExtractor.getBlueScore();
 		gamePlayers = StatsExtractor.getPlayers();
 	}
-	
+
 	static void incrementTimeOnIce() {
 		if (previousTime / 100 != time / 100) {
 			for (GamePlayerStruct gps : gamePlayers) {
@@ -79,7 +91,7 @@ public class StatsTracker {
 			}
 		}
 	}
-	
+
 	static void updatePlusMinus(int teamScored, GamePlayerStruct player) {
 		if (player.isPlaying()) {
 			if (player.team == teamScored) {
@@ -89,22 +101,22 @@ public class StatsTracker {
 			}
 		}
 	}
-	
+
 	static void addGoal(int team, int time, int period) {
 		String scorer = "", assister = "";
 
 		// Find the name of the scorer and the assister, update +/-
 		for (GamePlayerStruct currentPlayer : gamePlayers) {
-			
+
 			updatePlusMinus(team, currentPlayer);
-			
+
 			for (GamePlayerStruct previousPlayer : previousGamePlayers) {
 				if (currentPlayer.name.equals(previousPlayer.name)) {
-					
+
 					if (currentPlayer.goals != previousPlayer.goals) {
 						scorer = currentPlayer.name;
 					}
-					
+
 					if (currentPlayer.assists != previousPlayer.assists) {
 						assister = currentPlayer.name;
 					}
@@ -118,26 +130,24 @@ public class StatsTracker {
 			blueGoals.add(new Goal(scorer, assister, time, period, 1));
 		}
 	}
-	
+
 	static void updatePreviousGameData() {
 		previousRedScore = redScore;
 		previousBlueScore = blueScore;
 		previousGamePlayers = gamePlayers;
 		previousTime = time;
 	}
-	
+
 	/**
 	 * Check for the end of the game
 	 * Period value increases at the start of intermission not the next period
 	 * it appears: time = 0 if game ends in regulation
 	 * 			   time = 1 if goal is scored in OT
 	 */
-	static void checkEndOfGame() {
-		if (period > 3 && redScore != blueScore) {
-			tracking = false;
-		}
+	static boolean endOfGame() {
+		return period > 3 && redScore != blueScore;
 	}
-	
+
 	static void addGoalsToPerformances(ArrayList<Goal> goals) {
 		for (Goal g : goals) {
 			if (!g.scorer.equals("")) {
@@ -148,16 +158,40 @@ public class StatsTracker {
 			}
 		}
 	}
-	
+
 	static void writeGoalsToFile(File file, ArrayList<Goal> goals) throws IOException {
 		for (Goal g : goals) {
 			FileUtils.writeStringToFile(file, g.toString() + newLine, true);
 		}
 	}
-	
+
 	static void writePerformancesToFile(File file) throws IOException {
 		for (Entry<String, Performance> e : players.entrySet()) {
 			FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + newLine), true);
+		}
+	}
+
+	static void outputData() {
+		Date now = new Date();
+
+		File goalsFile = new File(now.getTime() + "-goals.txt"); 
+		File performancesFile = new File(now.getTime() + "-performances.txt"); 
+
+		String gameScore = "RED: " + redGoals.size() + " BLUE: " + blueGoals.size();
+
+		try {
+			FileUtils.writeStringToFile(performancesFile, gameScore + newLine, true);
+			FileUtils.writeStringToFile(goalsFile, gameScore + newLine, true);
+
+			writeGoalsToFile(goalsFile, redGoals);
+			writeGoalsToFile(goalsFile, blueGoals);
+
+			writePerformancesToFile(performancesFile);
+
+			System.in.read();
+
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -168,10 +202,10 @@ public class StatsTracker {
 		previousRedScore = StatsExtractor.getRedScore();
 		previousBlueScore = StatsExtractor.getBlueScore();
 
-		while (tracking) {
-			currentTickTime = System.currentTimeMillis();
-
-			if (currentTickTime - lastTickTime >= 1000) {
+		while (true) {
+			if (!tracking) {
+				checkForCommands(StatsExtractor.getLastChatMessage());
+			} else if (timeForNextTick()) {
 				lastTickTime = currentTickTime;
 
 				updateGameData();
@@ -189,34 +223,14 @@ public class StatsTracker {
 				}
 
 				updatePreviousGameData();
-				
-				checkEndOfGame();
+
+				if (endOfGame()) {
+					tracking = false;
+					addGoalsToPerformances(redGoals);
+					addGoalsToPerformances(blueGoals);
+					outputData();
+				}
 			}
-		}
-
-		addGoalsToPerformances(redGoals);
-		addGoalsToPerformances(blueGoals);
-		
-		Date now = new Date();
-		
-		File goalsFile = new File(now.getTime() + "-goals.txt"); 
-		File performancesFile = new File(now.getTime() + "-performances.txt"); 
-		
-		String gameScore = "RED: " + redGoals.size() + " BLUE: " + blueGoals.size();
-		
-		try {
-			FileUtils.writeStringToFile(performancesFile, gameScore + newLine, true);
-			FileUtils.writeStringToFile(goalsFile, gameScore + newLine, true);
-
-			writeGoalsToFile(goalsFile, redGoals);
-			writeGoalsToFile(goalsFile, blueGoals);
-			
-			writePerformancesToFile(performancesFile);
-			
-			System.in.read();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 }

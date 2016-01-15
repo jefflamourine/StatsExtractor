@@ -10,12 +10,16 @@ public class StatsExtractor {
 	private static long RED_SCORE = 0x7D33D98L;
 	private static long BLUE_SCORE = 0x7D33D9CL;
 	private static long PLAYER_STRUCT = 0x04A5B860L;
-	private static long PLAYER_POSITION_OFFSET = 4;
-	private static long PLAYER_TEAM_OFFSET = 8;
-	private static long PLAYER_NAME_OFFSET = 20;
-	private static long PLAYER_GOALS_OFFSET = 136;
-	private static long PLAYER_ASSISTS_OFFSET = 140;
-	private static long PLAYER_FULL_OFFSET = 152;
+	private static int PLAYER_POSITION_OFFSET = 4;
+	private static int PLAYER_TEAM_OFFSET = 8;
+	private static int PLAYER_NAME_OFFSET = 20;
+	private static int PLAYER_GOALS_OFFSET = 136;
+	private static int PLAYER_ASSISTS_OFFSET = 140;
+	private static int PLAYER_FULL_OFFSET = 152;
+
+	private static long LAST_CHAT = 0x044968CF;
+	private static long CHAT_STRUCT = 0x07126363L;
+	private static int CHAT_MESSAGE_OFFSET = 148;
 
 	public static void init() {
 		MemoryExtractor.init();
@@ -38,7 +42,7 @@ public class StatsExtractor {
 	}
 
 	public static String getName(long fromMemLoc) {
-		return MemoryExtractor.readMemory(fromMemLoc + PLAYER_NAME_OFFSET, 32).getString(0);
+		return MemoryExtractor.readMemory(fromMemLoc + PLAYER_NAME_OFFSET, 24).getString(0);
 	}
 
 	public static int getPos(long fromMemLoc) {
@@ -76,5 +80,17 @@ public class StatsExtractor {
 		return getPlayers(fromMemLoc + PLAYER_FULL_OFFSET, players);
 	}
 
+	public static ArrayList<String> getChatMessages() {
+		ArrayList<String> chatMessages = new ArrayList<String>();
+		for (int i = 0; i < 8; i++) {
+			String message = MemoryExtractor.readMemory(CHAT_STRUCT + i * CHAT_MESSAGE_OFFSET, CHAT_MESSAGE_OFFSET).getString(0);
+			chatMessages.add(message);
+		}
+		return chatMessages;
+	}
+
+	public static String getLastChatMessage() {
+		return MemoryExtractor.readMemory(LAST_CHAT, CHAT_MESSAGE_OFFSET).getString(0);
+	}
 
 }
