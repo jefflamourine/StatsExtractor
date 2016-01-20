@@ -17,7 +17,7 @@ public class StatsExtractor {
     private static int PLAYER_ASSISTS_OFFSET = 140;
     private static int PLAYER_FULL_OFFSET = 152;
 
-    private static long LAST_CHAT = 0x044968CF;
+    private static long LAST_CHAT = 0x044968C0;
     private static long CHAT_STRUCT = 0x07126363L;
     private static int CHAT_MESSAGE_OFFSET = 148;
 
@@ -67,6 +67,7 @@ public class StatsExtractor {
 
     public static ArrayList<GamePlayerStruct> getPlayers(long fromMemLoc, ArrayList<GamePlayerStruct> players) {
         String name = getName(fromMemLoc);
+
         if (name.isEmpty()) {
             return players;
         }
@@ -82,15 +83,26 @@ public class StatsExtractor {
 
     public static ArrayList<String> getChatMessages() {
         ArrayList<String> chatMessages = new ArrayList<String>();
+
         for (int i = 0; i < 8; i++) {
             String message = MemoryExtractor.readMemory(CHAT_STRUCT + i * CHAT_MESSAGE_OFFSET, CHAT_MESSAGE_OFFSET).getString(0);
             chatMessages.add(message);
         }
+
         return chatMessages;
     }
 
     public static String getLastChatMessage() {
-        return MemoryExtractor.readMemory(LAST_CHAT, CHAT_MESSAGE_OFFSET).getString(0);
+        return trimName(MemoryExtractor.readMemory(LAST_CHAT, CHAT_MESSAGE_OFFSET).getString(0));
     }
 
+    private static String trimName(String message) {
+        String result = "";
+
+        if (message.contains(":")) {
+            result = message.substring(message.indexOf(":") + 2);
+        }
+
+        return result;
+    }
 }
