@@ -1,5 +1,7 @@
 package sys;
 
+import java.io.IOException;
+
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -14,11 +16,26 @@ public class MemoryExtractor {
     static Kernel32 kernel32 = (Kernel32) Native.loadLibrary("kernel32", Kernel32.class);
     static User32 user32 = (User32) Native.loadLibrary("user32", User32.class);
 
-    public static int pid;
+    public static int pid = 0;
     public static Pointer process;
 
     public static void init() {
-        pid = getProcessId("Hockey?");
+        while (true) {
+            System.out.println("Looking for Hockey? process");
+            pid = getProcessId("Hockey?");
+            if (pid == 0) {
+                System.out.println("Hockey? process not found, press enter to try again");
+                try {
+                    System.in.read();
+                    System.in.read();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Hockey? process found");
+                break;
+            }
+        }
         process = openProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION, pid);
     }
 

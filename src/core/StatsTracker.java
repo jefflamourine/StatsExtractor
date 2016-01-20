@@ -23,6 +23,9 @@ public class StatsTracker {
 
     //-- Output Data --//
 
+    static String redTeamName = "";
+    static String blueTeamName = "";
+    static String gameDate = "";
     // Map of players who have played, i.e. those that should be shown in output
     // to their performance in the game
     static HashMap<String, Performance> players = new HashMap<String, Performance>();
@@ -54,9 +57,50 @@ public class StatsTracker {
         return seconds < 10 ? minutes + ":0" + seconds : minutes + ":" + seconds;
     }
 
-    static void checkForCommands(String message) {
-        if (message.length() == 3 && message.equals("!se")) {
-            System.out.println("Command detected");
+    static String[] detectCommands(String message) {
+        String[] args = {};
+        if (message.length() >= 4 && message.substring(0, 4).equals("!se ")) {
+            args = message.substring(4).split(" ");
+            System.out.println("Command detected: " + args[0]);
+        }
+        return args;
+    }
+
+    static String parseDateString(String dateString) {
+        String month = dateString.substring(0, 2);
+        String day = dateString.substring(2, 4);
+        String year = dateString.substring(4, 6);
+        int game = Integer.parseInt(dateString.substring(6, 7));
+
+        String time = "";
+
+        switch (game) {
+
+        case 1:
+            time = "7:30 PM";
+            break;
+        case 2:
+            time = "7:50 PM";
+            break;
+        case 3:
+            time = "8:10 PM";
+            break;
+        default:
+            break;
+
+        }
+        return month + "/" + day + "/" + year + " " + time;
+    }
+
+    static void handleCommands(String[] args) {
+        if (args.length == 0) {
+            return;
+        }
+        if (args[0].equals("start") && args.length == 4) {
+            redTeamName = args[1];
+            blueTeamName = args[2];
+            gameDate = parseDateString(args[3]);
+            System.out.println("Tracking: " + redTeamName + " vs. " + blueTeamName + " " + gameDate);
             tracking = true;
         }
     }
@@ -204,7 +248,7 @@ public class StatsTracker {
 
         while (true) {
             if (!tracking) {
-                checkForCommands(StatsExtractor.getLastChatMessage());
+                handleCommands(detectCommands(StatsExtractor.getLastChatMessage()));
             } else if (timeForNextTick()) {
                 lastTickTime = currentTickTime;
 

@@ -99,7 +99,7 @@ public class StatsExtractor {
     private static String trimName(String message) {
         String result = "";
 
-        if (message.contains(":")) {
+        if (message.contains(":") && message.length() > message.indexOf(":") + 2) {
             result = message.substring(message.indexOf(":") + 2);
         }
 
