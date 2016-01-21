@@ -81,7 +81,7 @@ public class StatsUploader {
         return false;
     }
 
-    public void upload(ArrayList<Goal> goals) { 
+    public void upload(ArrayList<Goal> goals) {
         HttpsURLConnection con = createConnection(submitURL);
 
         JSONObject jsonPayload = convertToPayload(goals);
