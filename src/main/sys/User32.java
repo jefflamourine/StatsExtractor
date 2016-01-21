@@ -1,4 +1,4 @@
-package sys;
+package main.sys;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;

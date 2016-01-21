@@ -1,7 +1,7 @@
-package core;
+package main.core;
 import java.util.ArrayList;
 
-import sys.MemoryExtractor;
+import main.sys.MemoryExtractor;
 
 public class StatsExtractor {
 
@@ -26,7 +26,7 @@ public class StatsExtractor {
     }
 
     public static int getTime() {
-        return MemoryExtractor.readMemory(TIME, 4).getInt(0);
+        return MemoryExtractor.readMemory(TIME, 4).getInt(0) / 100;
     }
 
     public static int getPeriod() {

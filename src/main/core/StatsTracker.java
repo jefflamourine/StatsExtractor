@@ -1,8 +1,8 @@
-package core;
+package main.core;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -25,7 +25,7 @@ public class StatsTracker {
 
     static String redTeamName = "";
     static String blueTeamName = "";
-    static String gameDate = "";
+    static GameDate gameDate;
     // Map of players who have played, i.e. those that should be shown in output
     // to their performance in the game
     static HashMap<String, Performance> players = new HashMap<String, Performance>();
@@ -33,15 +33,33 @@ public class StatsTracker {
     static ArrayList<Goal> redGoals = new ArrayList<Goal>();
     static ArrayList<Goal> blueGoals = new ArrayList<Goal>();
 
+    //-- StatsUploader: has state after verifyGame() that uploads to that game --//
+    static StatsUploader uploader = new StatsUploader();
+
     //-- Current memory data --//
 
-    static int redScore, blueScore, time, period;
+    static int redScore = 0;
+    static int blueScore = 0;
+    static int time, period;
     static ArrayList<GamePlayerStruct> gamePlayers = new ArrayList<GamePlayerStruct>();
 
     //-- Previous memory data --//
 
     static int previousRedScore, previousBlueScore, previousTime;
     static ArrayList<GamePlayerStruct> previousGamePlayers = new ArrayList<GamePlayerStruct>();
+
+    static void reset() {
+        redScore = 0;
+        blueScore = 0;
+        redTeamName = "";
+        blueTeamName = "";
+        redGoals = new ArrayList<Goal>();
+        blueGoals = new ArrayList<Goal>();
+        players = new HashMap<String, Performance>();
+        uploader = new StatsUploader();
+        gamePlayers = new ArrayList<GamePlayerStruct>();
+        previousGamePlayers = new ArrayList<GamePlayerStruct>();
+    }
 
     /**
      * Turn a game time integer into a pretty readable time
@@ -66,42 +84,36 @@ public class StatsTracker {
         return args;
     }
 
-    static String parseDateString(String dateString) {
-        String month = dateString.substring(0, 2);
-        String day = dateString.substring(2, 4);
-        String year = dateString.substring(4, 6);
-        int game = Integer.parseInt(dateString.substring(6, 7));
-
-        String time = "";
-
-        switch (game) {
-
-        case 1:
-            time = "7:30 PM";
-            break;
-        case 2:
-            time = "7:50 PM";
-            break;
-        case 3:
-            time = "8:10 PM";
-            break;
-        default:
-            break;
-
-        }
-        return month + "/" + day + "/" + year + " " + time;
-    }
-
     static void handleCommands(String[] args) {
         if (args.length == 0) {
             return;
         }
         if (args[0].equals("start") && args.length == 4) {
+            System.out.println("Valid start command args");
             redTeamName = args[1];
             blueTeamName = args[2];
-            gameDate = parseDateString(args[3]);
-            System.out.println("Tracking: " + redTeamName + " vs. " + blueTeamName + " " + gameDate);
-            tracking = true;
+            String dateString = args[3];
+            int month = Integer.parseInt(dateString.substring(0, 2));
+            int day = Integer.parseInt(dateString.substring(2, 4));
+            int year = Integer.parseInt(dateString.substring(4, 6));
+            int game = Integer.parseInt(dateString.substring(6, 7));
+            switch (game) {
+            case 1:
+                gameDate = new GameDate(year, month, day, 19, 30);
+                break;
+            case 2:
+                gameDate = new GameDate(year, month, day, 19, 50);
+                break;
+            case 3:
+                gameDate = new GameDate(year, month, day, 20, 10);
+                break;
+            }
+            System.out.println(gameDate.toString());
+
+            if (uploader.verifyGame(redTeamName, blueTeamName, gameDate)) {
+                System.out.println("Tracking: " + redTeamName + " vs. " + blueTeamName + " " + gameDate.toString());
+                tracking = true;
+            }
         }
     }
 
@@ -122,7 +134,7 @@ public class StatsTracker {
     }
 
     static void incrementTimeOnIce() {
-        if (previousTime / 100 != time / 100) {
+        if (previousTime != time) {
             for (GamePlayerStruct gps : gamePlayers) {
                 if (gps.isPlaying()) {
                     String name = gps.name;
@@ -232,8 +244,6 @@ public class StatsTracker {
 
             writePerformancesToFile(performancesFile);
 
-            System.in.read();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -269,10 +279,15 @@ public class StatsTracker {
                 updatePreviousGameData();
 
                 if (endOfGame()) {
-                    tracking = false;
                     addGoalsToPerformances(redGoals);
                     addGoalsToPerformances(blueGoals);
                     outputData();
+                    ArrayList<Goal> toUpload = new ArrayList<Goal>();
+                    toUpload.addAll(redGoals);
+                    toUpload.addAll(blueGoals);
+                    uploader.upload(toUpload);
+                    reset();
+                    tracking = false;
                 }
             }
         }
