@@ -46,12 +46,12 @@ public class StatsUploader {
         return con;
     }
 
-    public boolean verifyGame(String redTeamName, String blueTeamName, GameDate date) {
+    public boolean verifyGame(GameIdentity game) {
         HttpsURLConnection con = createConnection(verifyURL);
         JSONObject jsonPayload = new JSONObject();
-        jsonPayload.put("red", redTeamName);
-        jsonPayload.put("blue", blueTeamName);
-        jsonPayload.put("date", date.toString());
+        jsonPayload.put("red", game.redTeamName);
+        jsonPayload.put("blue", game.blueTeamName);
+        jsonPayload.put("date", game.date.toString());
 
         try {
             OutputStreamWriter osw = new OutputStreamWriter(con.getOutputStream());
@@ -67,9 +67,9 @@ public class StatsUploader {
                 }
                 br.close();
                 if (sb.toString().equals("1")) {
-                    this.redTeamName = redTeamName;
-                    this.blueTeamName = blueTeamName;
-                    this.date = date;
+                    this.redTeamName = game.redTeamName;
+                    this.blueTeamName = game.blueTeamName;
+                    this.date = game.date;
                     return true;
                 }
             } else {
@@ -125,6 +125,8 @@ public class StatsUploader {
 
     public static void main(String[] args) {
         StatsUploader su = new StatsUploader();
-        System.out.println(su.verifyGame("ATL", "LAK", new GameDate(15, 5, 17, 19, 30)));
+        GameIdentity game = new GameIdentity("ATL", "LAK", "0517151");
+        System.out.println(game.date.toString());
+        System.out.println(su.verifyGame(game));
     }
 }

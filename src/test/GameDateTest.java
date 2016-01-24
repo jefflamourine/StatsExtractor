@@ -11,6 +11,9 @@ public class GameDateTest {
     public void testConstructionAndToString() {
         GameDate date = new GameDate(2016, 1, 21, 19, 30);
         assertEquals(date.toString(), "Thu January 21 2016 19:30:00");
+        
+        date = new GameDate(16, 1, 21, 19, 30);
+        assertEquals(date.toString(), "Thu January 21 2016 19:30:00");
     }
     
 }
