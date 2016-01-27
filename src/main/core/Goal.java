@@ -24,8 +24,8 @@ public class Goal {
 
     @Override
     public String toString() {
-        return "Goal [scorer=" + scorer + ", assister=" + assister + ", time="
-                + time + ", period=" + period + ", team=" + team + "]";
+        return "Goal [scorer=" + scorer + ", assister=" + assister + ", time=" + time + ", period="
+                + period + ", team=" + team + "]";
     }
 
     public JSONObject toJson() {

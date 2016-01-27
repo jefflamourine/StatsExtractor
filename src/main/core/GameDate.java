@@ -7,7 +7,8 @@ public class GameDate {
 
     Calendar c = Calendar.getInstance();
 
-    public GameDate() {}
+    public GameDate() {
+    }
 
     public GameDate(int year, int month, int day, int hours, int minutes) {
         if (year < 1000) {
@@ -29,22 +30,22 @@ public class GameDate {
         int hours, minutes;
 
         switch (game) {
-        case 1:
-            hours = 19;
-            minutes = 30;
-            break;
-        case 2:
-            hours = 19;
-            minutes = 50;
-            break;
-        case 3: 
-            hours = 20;
-            minutes = 10;
-            break;
-        default:
-            hours = 0;
-            minutes = 0;
-            break;
+            case 1:
+                hours = 19;
+                minutes = 30;
+                break;
+            case 2:
+                hours = 19;
+                minutes = 50;
+                break;
+            case 3:
+                hours = 20;
+                minutes = 10;
+                break;
+            default:
+                hours = 0;
+                minutes = 0;
+                break;
         }
 
         c.set(year, month - 1, day, hours, minutes, 0);

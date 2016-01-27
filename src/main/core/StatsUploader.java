@@ -19,11 +19,9 @@ public class StatsUploader {
     private static final String SUBMIT_URL = "https://hockey-jefflamourine.rhcloud.com/try-submit-goals";
     private static final String VERIFY_URL = "https://hockey-jefflamourine.rhcloud.com/verify-game";
 
-    private String redTeamName, blueTeamName;
-    GameDate date;
     private static URL submitURL, verifyURL;
 
-    public StatsUploader() {
+    public static void init() {
         try {
             submitURL = new URL(SUBMIT_URL);
             verifyURL = new URL(VERIFY_URL);
@@ -46,7 +44,7 @@ public class StatsUploader {
         return con;
     }
 
-    public boolean verifyGame(GameIdentity game) {
+    public static boolean verifyGame(GameIdentity game) {
         HttpsURLConnection con = createConnection(verifyURL);
         JSONObject jsonPayload = new JSONObject();
         jsonPayload.put("red", game.redTeamName);
@@ -60,16 +58,14 @@ public class StatsUploader {
             int httpResult = con.getResponseCode();
             if (httpResult == HttpURLConnection.HTTP_OK) {
                 StringBuilder sb = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(),
+                        "utf-8"));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line);
                 }
                 br.close();
                 if (sb.toString().equals("1")) {
-                    this.redTeamName = game.redTeamName;
-                    this.blueTeamName = game.blueTeamName;
-                    this.date = game.date;
                     return true;
                 }
             } else {
@@ -81,10 +77,10 @@ public class StatsUploader {
         return false;
     }
 
-    public void upload(ArrayList<Goal> goals) {
+    public static void upload(GameIdentity game, ArrayList<Goal> goals) {
         HttpsURLConnection con = createConnection(submitURL);
 
-        JSONObject jsonPayload = convertToPayload(goals);
+        JSONObject jsonPayload = convertToPayload(game, goals);
 
         try {
             OutputStreamWriter osw = new OutputStreamWriter(con.getOutputStream());
@@ -93,7 +89,8 @@ public class StatsUploader {
             int httpResult = con.getResponseCode();
             if (httpResult == HttpURLConnection.HTTP_OK) {
                 StringBuilder sb = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(),
+                        "utf-8"));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line);
@@ -103,17 +100,16 @@ public class StatsUploader {
             } else {
                 System.out.println(con.getResponseMessage());
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private JSONObject convertToPayload(ArrayList<Goal> goals) {
+    private static JSONObject convertToPayload(GameIdentity game, ArrayList<Goal> goals) {
         JSONObject json = new JSONObject();
-        json.put("red", redTeamName);
-        json.put("blue", blueTeamName);
-        json.put("date", date.toString());
+        json.put("red", game.redTeamName);
+        json.put("blue", game.blueTeamName);
+        json.put("date", game.date.toString());
         JSONArray goalsJson = new JSONArray();
         for (Goal g : goals) {
             goalsJson.put(g.toJson());
@@ -121,12 +117,5 @@ public class StatsUploader {
         json.put("goals", goalsJson);
         System.out.println(json.toString());
         return json;
-    }
-
-    public static void main(String[] args) {
-        StatsUploader su = new StatsUploader();
-        GameIdentity game = new GameIdentity("ATL", "LAK", "0517151");
-        System.out.println(game.date.toString());
-        System.out.println(su.verifyGame(game));
     }
 }

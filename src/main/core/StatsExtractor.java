@@ -1,4 +1,5 @@
 package main.core;
+
 import java.util.ArrayList;
 
 import main.sys.MemoryExtractor;
@@ -65,7 +66,8 @@ public class StatsExtractor {
         return getPlayers(PLAYER_STRUCT, new ArrayList<GamePlayerStruct>());
     }
 
-    public static ArrayList<GamePlayerStruct> getPlayers(long fromMemLoc, ArrayList<GamePlayerStruct> players) {
+    public static ArrayList<GamePlayerStruct> getPlayers(long fromMemLoc,
+            ArrayList<GamePlayerStruct> players) {
         String name = getName(fromMemLoc);
 
         if (name.isEmpty()) {
@@ -85,7 +87,8 @@ public class StatsExtractor {
         ArrayList<String> chatMessages = new ArrayList<String>();
 
         for (int i = 0; i < 8; i++) {
-            String message = MemoryExtractor.readMemory(CHAT_STRUCT + i * CHAT_MESSAGE_OFFSET, CHAT_MESSAGE_OFFSET).getString(0);
+            String message = MemoryExtractor.readMemory(CHAT_STRUCT + i * CHAT_MESSAGE_OFFSET,
+                    CHAT_MESSAGE_OFFSET).getString(0);
             chatMessages.add(message);
         }
 

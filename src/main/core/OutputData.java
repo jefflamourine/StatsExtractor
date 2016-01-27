@@ -1,17 +1,9 @@
 package main.core;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
 
 public class OutputData {
-
-    final static String newLine = System.getProperty("line.separator");
 
     HashMap<String, Performance> players;
     ArrayList<Goal> redGoals, blueGoals;
@@ -45,12 +37,7 @@ public class OutputData {
     }
 
     public void addGoalsToPerformances() {
-        addGoalsToPerformances(redGoals);
-        addGoalsToPerformances(blueGoals);
-    }
-
-    public void addGoalsToPerformances(ArrayList<Goal> goals) {
-        for (Goal g : goals) {
+        for (Goal g : goals()) {
             if (!g.scorer.equals("")) {
                 players.get(g.scorer).goals++;
             }
@@ -67,7 +54,8 @@ public class OutputData {
         return goals;
     }
 
-    public void addGoal(int team, int time, int period, ArrayList<GamePlayerStruct> gamePlayers, ArrayList<GamePlayerStruct> previousGamePlayers) {
+    public void addGoal(int team, int time, int period, ArrayList<GamePlayerStruct> gamePlayers,
+            ArrayList<GamePlayerStruct> previousGamePlayers) {
         String scorer = "", assister = "";
 
         // Find the name of the scorer and the assister, update +/-
@@ -92,40 +80,6 @@ public class OutputData {
             redGoals.add(new Goal(scorer, assister, time, period, 0));
         } else {
             blueGoals.add(new Goal(scorer, assister, time, period, 1));
-        }
-    }
-
-    public void writeGoalsToFile(File file, ArrayList<Goal> goals) throws IOException {
-        for (Goal g : goals) {
-            FileUtils.writeStringToFile(file, g.toString() + newLine, true);
-        }
-    }
-
-    public void writePerformancesToFile(File file) throws IOException {
-        for (Entry<String, Performance> e : players.entrySet()) {
-            FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + newLine), true);
-        }
-    }
-
-    public void outputToFile() {
-        Date now = new Date();
-
-        File goalsFile = new File(now.getTime() + "-goals.txt"); 
-        File performancesFile = new File(now.getTime() + "-performances.txt"); 
-
-        String gameScore = "RED: " + redGoals.size() + " BLUE: " + blueGoals.size();
-
-        try {
-            FileUtils.writeStringToFile(performancesFile, gameScore + newLine, true);
-            FileUtils.writeStringToFile(goalsFile, gameScore + newLine, true);
-
-            writeGoalsToFile(goalsFile, redGoals);
-            writeGoalsToFile(goalsFile, blueGoals);
-
-            writePerformancesToFile(performancesFile);
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
