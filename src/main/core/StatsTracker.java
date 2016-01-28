@@ -28,14 +28,29 @@ public class StatsTracker {
             return;
         }
         if (args[0].equals("start") && args.length == 4) {
-            System.out.println("Valid start command args");
+            System.out.println("Valid verified-game start command");
             game = new GameIdentity(args[1], args[2], args[3]);
             if (StatsUploader.verifyGame(game)) {
-                System.out.println("Tracking: " + game.redTeamName + " vs. " + game.blueTeamName
-                        + " " + game.date.toString());
+                System.out.println("Tracking: " + game.redTeamName + " vs. " + game.blueTeamName + " " + game.date.toString());
+                initializeGame();
                 state = State.TRACKING;
             }
+        } else if (args[0].equals("start") && args.length == 3) {
+            System.out.println("Valid non-verified-game start command w/ team names");
+            game = new GameIdentity(args[1], args[2], null);
+            initializeGame();
+        } else if (args[0].equals("start") && args.length == 1) {
+            System.out.println("Valid non-verified-game start command w/o team names");
+            game = new GameIdentity("Red", "Blue", null);
+            initializeGame();
         }
+    }
+
+    public static void initializeGame() {
+        currentState = new GameState();
+        previousState = new GameState(currentState);
+        outputData = new OutputData();
+
     }
 
     public static void main(String... args) {
@@ -43,9 +58,6 @@ public class StatsTracker {
         StatsUploader.init();
 
         MemoryReadTimer timer = new MemoryReadTimer();
-
-        currentState = new GameState();
-        previousState = new GameState(currentState);
 
         while (true) {
             if (state == State.WAITING) {
@@ -60,13 +72,11 @@ public class StatsTracker {
 
                 // If score has changed
                 if (currentState.redScore != previousState.redScore) {
-                    outputData.addGoal(0, currentState.time, currentState.period,
-                            currentState.players, previousState.players);
+                    outputData.addGoal(0, currentState.time, currentState.period, currentState.players, previousState.players);
                 }
 
                 if (currentState.blueScore != previousState.blueScore) {
-                    outputData.addGoal(1, currentState.time, currentState.period,
-                            currentState.players, previousState.players);
+                    outputData.addGoal(1, currentState.time, currentState.period, currentState.players, previousState.players);
                 }
 
                 previousState = new GameState(currentState);

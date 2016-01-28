@@ -8,7 +8,11 @@ public class GameIdentity {
     public GameIdentity(String redTeamName, String blueTeamName, String rawDate) {
         this.redTeamName = redTeamName;
         this.blueTeamName = blueTeamName;
-        this.date = new GameDate();
-        this.date.setDateFromString(rawDate);
+        if (rawDate == null) {
+            this.date = null;
+        } else {
+            this.date = new GameDate();
+            this.date.setDateFromString(rawDate);
+        }
     }
 }
