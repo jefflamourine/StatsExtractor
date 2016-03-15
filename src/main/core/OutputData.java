@@ -3,6 +3,9 @@ package main.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Container for the data about a game to be output to file/server
+ */
 public class OutputData {
 
     HashMap<String, Performance> players;
@@ -14,6 +17,10 @@ public class OutputData {
         blueGoals = new ArrayList<Goal>();
     }
 
+    /**
+     * Increment the toi of the players given
+     * @param gamePlayers list of players to increment toi
+     */
     public void incrementTimeOnIce(ArrayList<HQMPlayerStruct> gamePlayers) {
         for (HQMPlayerStruct gps : gamePlayers) {
             if (gps.isPlaying()) {
@@ -26,6 +33,11 @@ public class OutputData {
         }
     }
 
+    /**
+     * Increment the plus/minus of the given player, reflecting a goal for the given team
+     * @param teamScored int representing team that scored
+     * @param player player to update plus/minus
+     */
     public void updatePlusMinus(int teamScored, HQMPlayerStruct player) {
         if (player.isPlaying()) {
             if (player.team == teamScored) {
@@ -36,6 +48,9 @@ public class OutputData {
         }
     }
 
+    /**
+     * Update the player performance counts of goals/assists accumulated during tracking
+     */
     public void addGoalsToPerformances() {
         for (Goal g : goals()) {
             if (!g.scorer.equals("")) {
@@ -54,8 +69,7 @@ public class OutputData {
         return goals;
     }
 
-    public void addGoal(int team, int time, int period, ArrayList<HQMPlayerStruct> gamePlayers,
-            ArrayList<HQMPlayerStruct> previousGamePlayers) {
+    public void addGoal(int team, int time, int period, ArrayList<HQMPlayerStruct> gamePlayers, ArrayList<HQMPlayerStruct> previousGamePlayers) {
         String scorer = "", assister = "";
 
         // Find the name of the scorer and the assister, update +/-

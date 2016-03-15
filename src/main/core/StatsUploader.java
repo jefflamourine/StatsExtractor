@@ -107,7 +107,7 @@ public class StatsUploader {
         JSONObject json = new JSONObject();
         json.put("red", game.redTeamName);
         json.put("blue", game.blueTeamName);
-        json.put("date", game.date.toString());
+        json.put("date", game.date);
         JSONArray goalsJson = new JSONArray();
         for (Goal g : goals) {
             goalsJson.put(g.toJson());

@@ -36,7 +36,6 @@ public class OutputHandler {
             FileUtils.writeStringToFile(goalsFile, gameScore + newLine, true);
 
             writeGoalsToFile(goalsFile, data);
-
             writePerformancesToFile(performancesFile, data);
 
         } catch (IOException e) {

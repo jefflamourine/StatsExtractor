@@ -23,6 +23,9 @@ public class HQMGameState {
         players = state.players;
     }
 
+    /**
+     * Updates the game state with the current data from memory
+     */
     void update() {
         time = StatsExtractor.getTime();
         period = StatsExtractor.getPeriod();

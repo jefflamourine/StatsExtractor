@@ -10,14 +10,16 @@ public class StatsTracker {
     static State state = State.WAITING;
 
     static GameIdentity game;
-
     static OutputData outputData;
 
     // Track the state of the game in the previous tick and the current tick
     static HQMGameState currentState, previousState;
 
-    // If chat string starts with command prefix,
-    // Convert into an argv/argc style array, splitting on spaces.
+    /**
+     * If chat string starts with command prefix,
+     * Convert into an argv/argc style array, splitting on spaces.
+     * @return [command, arg1, arg2, ... ]
+     */
     static String[] detectCommands(String message) {
         String[] args = {};
         if (message.length() >= 4 && message.substring(0, 4).equals("!se ")) {
@@ -27,6 +29,10 @@ public class StatsTracker {
         return args;
     }
 
+    /**
+     * Identifies the game (should verify it) and starts tracking it.
+     * @param args An array with a command and set of args
+     */
     static void handleCommands(String[] args) {
         String command;
         int argc = args.length;
@@ -37,7 +43,7 @@ public class StatsTracker {
         }
         if (command.equals("start")) {
             if (argc == 4) {
-                // Start command like: '!se start BOS PHI MMDDYYT' can be verified
+                // Start command like: '!se start BOS PHI MMDDYY' can be verified
                 System.out.println("Valid verified-game start command");
                 game = new GameIdentity(args[1], args[2], args[3]);
                 System.out.println("Tracking: " + game.redTeamName + " vs. " + game.blueTeamName + " " + game.date.toString());
@@ -60,11 +66,13 @@ public class StatsTracker {
         }
     }
 
+    /**
+     * Initializes/resets the game states and output data
+     */
     public static void initializeGame() {
         currentState = new HQMGameState();
         previousState = new HQMGameState(currentState);
         outputData = new OutputData();
-
     }
 
     public static void main(String... args) {
@@ -99,7 +107,7 @@ public class StatsTracker {
                     outputData.addGoalsToPerformances();
                     OutputHandler.outputToFiles(game, outputData);
                     OutputHandler.upload(game, outputData);
-                    break;
+                    state = State.WAITING;
                 }
             }
         }
