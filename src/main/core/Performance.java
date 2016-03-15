@@ -18,7 +18,6 @@ public class Performance {
 
     @Override
     public String toString() {
-        return "Performance [team=" + team + ", goals=" + goals + ", assists=" + assists + ", toi="
-                + toi + ", plusminus=" + plusminus + "]";
+        return "Performance [team=" + team + ", goals=" + goals + ", assists=" + assists + ", toi=" + toi + ", plusminus=" + plusminus + "]";
     }
 }

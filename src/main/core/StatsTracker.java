@@ -6,14 +6,20 @@ public class StatsTracker {
         WAITING, TRACKING, OUTPUTTING
     }
 
+    // Initial state is waiting
     static State state = State.WAITING;
 
     static GameIdentity game;
-
     static OutputData outputData;
 
-    static GameState currentState, previousState;
+    // Track the state of the game in the previous tick and the current tick
+    static HQMGameState currentState, previousState;
 
+    /**
+     * If chat string starts with command prefix,
+     * Convert into an argv/argc style array, splitting on spaces.
+     * @return [command, arg1, arg2, ... ]
+     */
     static String[] detectCommands(String message) {
         String[] args = {};
         if (message.length() >= 4 && message.substring(0, 4).equals("!se ")) {
@@ -23,34 +29,50 @@ public class StatsTracker {
         return args;
     }
 
+    /**
+     * Identifies the game (should verify it) and starts tracking it.
+     * @param args An array with a command and set of args
+     */
     static void handleCommands(String[] args) {
-        if (args.length == 0) {
+        String command;
+        int argc = args.length;
+        if (argc == 0) {
             return;
+        } else {
+            command = args[0];
         }
-        if (args[0].equals("start") && args.length == 4) {
-            System.out.println("Valid verified-game start command");
-            game = new GameIdentity(args[1], args[2], args[3]);
-            if (StatsUploader.verifyGame(game)) {
+        if (command.equals("start")) {
+            if (argc == 4) {
+                // Start command like: '!se start BOS PHI MMDDYY' can be verified
+                System.out.println("Valid verified-game start command");
+                game = new GameIdentity(args[1], args[2], args[3]);
                 System.out.println("Tracking: " + game.redTeamName + " vs. " + game.blueTeamName + " " + game.date.toString());
-                initializeGame();
-                state = State.TRACKING;
+            } else if (argc == 3) {
+                // Start command like: '!se start BOS PHI' can't be verified
+                System.out.println("Valid non-verified-game start command w/ team names");
+                game = new GameIdentity(args[1], args[2], null);
+                System.out.println("Tracking: " + game.redTeamName + " vs. " + game.blueTeamName);
+            } else if (argc == 1) {
+                // Start command like: '!se start' can't be verified
+                System.out.println("Valid non-verified-game start command w/o team names");
+                game = new GameIdentity("Red", "Blue", null);
+                System.out.println("Tracking unspecified game");
+            } else {
+                return;
             }
-        } else if (args[0].equals("start") && args.length == 3) {
-            System.out.println("Valid non-verified-game start command w/ team names");
-            game = new GameIdentity(args[1], args[2], null);
+
             initializeGame();
-        } else if (args[0].equals("start") && args.length == 1) {
-            System.out.println("Valid non-verified-game start command w/o team names");
-            game = new GameIdentity("Red", "Blue", null);
-            initializeGame();
+            state = State.TRACKING;
         }
     }
 
+    /**
+     * Initializes/resets the game states and output data
+     */
     public static void initializeGame() {
-        currentState = new GameState();
-        previousState = new GameState(currentState);
+        currentState = new HQMGameState();
+        previousState = new HQMGameState(currentState);
         outputData = new OutputData();
-
     }
 
     public static void main(String... args) {
@@ -79,13 +101,13 @@ public class StatsTracker {
                     outputData.addGoal(1, currentState.time, currentState.period, currentState.players, previousState.players);
                 }
 
-                previousState = new GameState(currentState);
+                previousState = new HQMGameState(currentState);
 
                 if (currentState.endOfGame()) {
                     outputData.addGoalsToPerformances();
                     OutputHandler.outputToFiles(game, outputData);
                     OutputHandler.upload(game, outputData);
-                    break;
+                    state = State.WAITING;
                 }
             }
         }

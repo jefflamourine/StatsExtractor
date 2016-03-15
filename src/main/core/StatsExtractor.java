@@ -62,12 +62,12 @@ public class StatsExtractor {
         return MemoryExtractor.readMemory(fromMemLoc + PLAYER_TEAM_OFFSET, 4).getInt(0);
     }
 
-    public static ArrayList<GamePlayerStruct> getPlayers() {
-        return getPlayers(PLAYER_STRUCT, new ArrayList<GamePlayerStruct>());
+    public static ArrayList<HQMPlayerStruct> getPlayers() {
+        return getPlayers(PLAYER_STRUCT, new ArrayList<HQMPlayerStruct>());
     }
 
-    public static ArrayList<GamePlayerStruct> getPlayers(long fromMemLoc,
-            ArrayList<GamePlayerStruct> players) {
+    public static ArrayList<HQMPlayerStruct> getPlayers(long fromMemLoc,
+            ArrayList<HQMPlayerStruct> players) {
         String name = getName(fromMemLoc);
 
         if (name.isEmpty()) {
@@ -79,7 +79,7 @@ public class StatsExtractor {
         int assists = getAssists(fromMemLoc);
         int pos = getPos(fromMemLoc);
 
-        players.add(new GamePlayerStruct(team, name, goals, assists, pos));
+        players.add(new HQMPlayerStruct(team, name, goals, assists, pos));
         return getPlayers(fromMemLoc + PLAYER_FULL_OFFSET, players);
     }
 
