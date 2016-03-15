@@ -14,8 +14,8 @@ public class OutputData {
         blueGoals = new ArrayList<Goal>();
     }
 
-    public void incrementTimeOnIce(ArrayList<GamePlayerStruct> gamePlayers) {
-        for (GamePlayerStruct gps : gamePlayers) {
+    public void incrementTimeOnIce(ArrayList<HQMPlayerStruct> gamePlayers) {
+        for (HQMPlayerStruct gps : gamePlayers) {
             if (gps.isPlaying()) {
                 if (players.containsKey(gps.name)) {
                     players.get(gps.name).toi++;
@@ -26,7 +26,7 @@ public class OutputData {
         }
     }
 
-    public void updatePlusMinus(int teamScored, GamePlayerStruct player) {
+    public void updatePlusMinus(int teamScored, HQMPlayerStruct player) {
         if (player.isPlaying()) {
             if (player.team == teamScored) {
                 players.get(player.name).plusminus++;
@@ -54,16 +54,16 @@ public class OutputData {
         return goals;
     }
 
-    public void addGoal(int team, int time, int period, ArrayList<GamePlayerStruct> gamePlayers,
-            ArrayList<GamePlayerStruct> previousGamePlayers) {
+    public void addGoal(int team, int time, int period, ArrayList<HQMPlayerStruct> gamePlayers,
+            ArrayList<HQMPlayerStruct> previousGamePlayers) {
         String scorer = "", assister = "";
 
         // Find the name of the scorer and the assister, update +/-
-        for (GamePlayerStruct currentPlayer : gamePlayers) {
+        for (HQMPlayerStruct currentPlayer : gamePlayers) {
 
             updatePlusMinus(team, currentPlayer);
 
-            for (GamePlayerStruct previousPlayer : previousGamePlayers) {
+            for (HQMPlayerStruct previousPlayer : previousGamePlayers) {
                 if (currentPlayer.name.equals(previousPlayer.name)) {
 
                     if (currentPlayer.goals != previousPlayer.goals) {

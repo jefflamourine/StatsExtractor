@@ -16,8 +16,8 @@ import org.json.JSONObject;
 
 public class StatsUploader {
 
-    private static final String SUBMIT_URL = "https://hockey-jefflamourine.rhcloud.com/try-submit-goals";
-    private static final String VERIFY_URL = "https://hockey-jefflamourine.rhcloud.com/verify-game";
+    private static final String SUBMIT_URL = "https://dev-jefflamourine.rhcloud.com/statstracker/submit";
+    private static final String VERIFY_URL = "https://dev-jefflamourine.rhcloud.com/statstracker/verify";
 
     private static URL submitURL, verifyURL;
 
@@ -58,8 +58,7 @@ public class StatsUploader {
             int httpResult = con.getResponseCode();
             if (httpResult == HttpURLConnection.HTTP_OK) {
                 StringBuilder sb = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(),
-                        "utf-8"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line);
@@ -89,8 +88,7 @@ public class StatsUploader {
             int httpResult = con.getResponseCode();
             if (httpResult == HttpURLConnection.HTTP_OK) {
                 StringBuilder sb = new StringBuilder();
-                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(),
-                        "utf-8"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line);

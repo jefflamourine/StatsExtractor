@@ -3,7 +3,7 @@ package main.core;
 public class GameIdentity {
 
     String redTeamName, blueTeamName;
-    GameDate date;
+    GameDateTime date;
 
     public GameIdentity(String redTeamName, String blueTeamName, String rawDate) {
         this.redTeamName = redTeamName;
@@ -11,7 +11,7 @@ public class GameIdentity {
         if (rawDate == null) {
             this.date = null;
         } else {
-            this.date = new GameDate();
+            this.date = new GameDateTime();
             this.date.setDateFromString(rawDate);
         }
     }

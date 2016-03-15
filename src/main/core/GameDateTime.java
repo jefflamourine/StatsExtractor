@@ -3,18 +3,12 @@ package main.core;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class GameDate {
+public class GameDateTime {
 
     Calendar c = Calendar.getInstance();
 
-    public GameDate() {
-    }
+    public GameDateTime() {
 
-    public GameDate(int year, int month, int day, int hours, int minutes) {
-        if (year < 1000) {
-            year += 2000;
-        }
-        c.set(year, month - 1, day, hours, minutes, 0);
     }
 
     public void setDateFromString(String date) {
