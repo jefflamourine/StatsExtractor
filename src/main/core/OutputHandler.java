@@ -18,7 +18,7 @@ public class OutputHandler {
     }
 
     public static void writePerformancesToFile(File file, OutputData data) throws IOException {
-        for (Entry<String, Performance> e : data.players.entrySet()) {
+        for (Entry<String, Performance> e : data.performances.entrySet()) {
             FileUtils.writeStringToFile(file, (e.getKey() + ": " + e.getValue().toString() + newLine), true);
         }
     }
@@ -29,7 +29,7 @@ public class OutputHandler {
         File goalsFile = new File(now.getTime() + "-goals.txt");
         File performancesFile = new File(now.getTime() + "-performances.txt");
 
-        String gameScore = "RED - " + game.redTeamName + "  " + data.redGoals.size() + ":" + data.blueGoals.size() + "  " + " - BLUE";
+        String gameScore = "RED - " + game.redTeamName + "  " + data.redGoals.size() + ":" + data.blueGoals.size() + "  " + game.blueTeamName + " - BLUE";
 
         try {
             FileUtils.writeStringToFile(performancesFile, gameScore + newLine, true);
@@ -45,7 +45,7 @@ public class OutputHandler {
 
     public static void upload(GameIdentity game, OutputData data) {
         if (game.date != null) {
-            StatsUploader.upload(game, data.goals());
+            StatsUploader.upload(game, data);
         }
     }
 }

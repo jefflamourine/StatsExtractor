@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
  */
 public class GameIdentity {
 
-    String redTeamName, blueTeamName, date;
+    public String redTeamName, blueTeamName, date;
 
     public GameIdentity(String redTeamName, String blueTeamName, String rawDate) {
         this.redTeamName = redTeamName;
@@ -17,8 +17,8 @@ public class GameIdentity {
         if (rawDate == null) {
             this.date = null;
         } else {
-            SimpleDateFormat input = new SimpleDateFormat("MMDDYY");
-            SimpleDateFormat output = new SimpleDateFormat("EEE MMMMM dd yyyy HH:mm:ss");
+            SimpleDateFormat input = new SimpleDateFormat("MMddyy");
+            SimpleDateFormat output = new SimpleDateFormat("EEE MMMMM dd yyyy");
             try {
                 this.date = output.format(input.parse(rawDate));
             } catch (ParseException e) {

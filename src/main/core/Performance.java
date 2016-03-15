@@ -1,5 +1,7 @@
 package main.core;
 
+import org.json.JSONObject;
+
 public class Performance {
 
     int team, goals, assists, toi, plusminus;
@@ -19,5 +21,15 @@ public class Performance {
     @Override
     public String toString() {
         return "Performance [team=" + team + ", goals=" + goals + ", assists=" + assists + ", toi=" + toi + ", plusminus=" + plusminus + "]";
+    }
+
+    public JSONObject toJson() {
+        JSONObject json = new JSONObject();
+        json.put("team", team);
+        json.put("goals", goals);
+        json.put("assists", assists);
+        json.put("toi", toi);
+        json.put("plusminus", plusminus);
+        return json;
     }
 }

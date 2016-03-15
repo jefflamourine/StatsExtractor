@@ -8,26 +8,28 @@ import java.util.HashMap;
  */
 public class OutputData {
 
-    HashMap<String, Performance> players;
+    HashMap<String, Performance> performances;
     ArrayList<Goal> redGoals, blueGoals;
 
     public OutputData() {
-        players = new HashMap<String, Performance>();
+        performances = new HashMap<String, Performance>();
         redGoals = new ArrayList<Goal>();
         blueGoals = new ArrayList<Goal>();
     }
 
     /**
      * Increment the toi of the players given
-     * @param gamePlayers list of players to increment toi
+     * 
+     * @param gamePlayers
+     *            list of players to increment toi
      */
     public void incrementTimeOnIce(ArrayList<HQMPlayerStruct> gamePlayers) {
         for (HQMPlayerStruct gps : gamePlayers) {
             if (gps.isPlaying()) {
-                if (players.containsKey(gps.name)) {
-                    players.get(gps.name).toi++;
+                if (performances.containsKey(gps.name)) {
+                    performances.get(gps.name).toi++;
                 } else {
-                    players.put(gps.name, new Performance(gps.team));
+                    performances.put(gps.name, new Performance(gps.team));
                 }
             }
         }
@@ -35,15 +37,18 @@ public class OutputData {
 
     /**
      * Increment the plus/minus of the given player, reflecting a goal for the given team
-     * @param teamScored int representing team that scored
-     * @param player player to update plus/minus
+     * 
+     * @param teamScored
+     *            int representing team that scored
+     * @param player
+     *            player to update plus/minus
      */
     public void updatePlusMinus(int teamScored, HQMPlayerStruct player) {
         if (player.isPlaying()) {
             if (player.team == teamScored) {
-                players.get(player.name).plusminus++;
+                performances.get(player.name).plusminus++;
             } else {
-                players.get(player.name).plusminus--;
+                performances.get(player.name).plusminus--;
             }
         }
     }
@@ -54,10 +59,10 @@ public class OutputData {
     public void addGoalsToPerformances() {
         for (Goal g : goals()) {
             if (!g.scorer.equals("")) {
-                players.get(g.scorer).goals++;
+                performances.get(g.scorer).goals++;
             }
             if (!g.assister.equals("")) {
-                players.get(g.assister).assists++;
+                performances.get(g.assister).assists++;
             }
         }
     }

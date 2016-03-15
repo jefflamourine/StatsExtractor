@@ -7,7 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -76,10 +76,11 @@ public class StatsUploader {
         return false;
     }
 
-    public static void upload(GameIdentity game, ArrayList<Goal> goals) {
+    public static void upload(GameIdentity game, OutputData data) {
         HttpsURLConnection con = createConnection(submitURL);
 
-        JSONObject jsonPayload = convertToPayload(game, goals);
+        JSONObject jsonPayload = convertToPayload(game, data);
+        System.out.println(jsonPayload.toString());
 
         try {
             OutputStreamWriter osw = new OutputStreamWriter(con.getOutputStream());
@@ -103,16 +104,24 @@ public class StatsUploader {
         }
     }
 
-    private static JSONObject convertToPayload(GameIdentity game, ArrayList<Goal> goals) {
+    private static JSONObject convertToPayload(GameIdentity game, OutputData data) {
         JSONObject json = new JSONObject();
         json.put("red", game.redTeamName);
         json.put("blue", game.blueTeamName);
         json.put("date", game.date);
+
         JSONArray goalsJson = new JSONArray();
-        for (Goal g : goals) {
+        for (Goal g : data.goals()) {
             goalsJson.put(g.toJson());
         }
         json.put("goals", goalsJson);
+
+        JSONArray performancesJSON = new JSONArray();
+        for (Map.Entry<String, Performance> performance : data.performances.entrySet()) {
+            performancesJSON.put(new JSONObject().put(performance.getKey(), performance.getValue().toJson()));
+        }
+        json.put("performances", performancesJSON);
+
         System.out.println(json.toString());
         return json;
     }
